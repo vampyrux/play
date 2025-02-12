@@ -1,5 +1,128 @@
-Hello world check out my homepage!
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sudoku Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .sudoku-container {
+            display: grid;
+            grid-template-columns: repeat(9, 40px);
+            gap: 2px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .cell {
+            width: 40px;
+            height: 40px;
+            text-align: center;
+            font-size: 18px;
+        }
+        .cell[readonly] {
+            background-color: #ddd;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simple Sudoku</h1>
+    <div class="sudoku-container" id="sudoku-grid"></div>
+    <button onclick="checkSolution()">Check Solution</button>
+    <p id="message"></p>
+    
+    <script>
+        const puzzle = [
+            [5, 3, 0, 0, 7, 0, 0, 0, 0],
+            [6, 0, 0, 1, 9, 5, 0, 0, 0],
+            [0, 9, 8, 0, 0, 0, 0, 6, 0],
+            [8, 0, 0, 0, 6, 0, 0, 0, 3],
+            [4, 0, 0, 8, 0, 3, 0, 0, 1],
+            [7, 0, 0, 0, 2, 0, 0, 0, 6],
+            [0, 6, 0, 0, 0, 0, 2, 8, 0],
+            [0, 0, 0, 4, 1, 9, 0, 0, 5],
+            [0, 0, 0, 0, 8, 0, 0, 7, 9]
+        ];
 
+        function createSudokuGrid() {
+            const grid = document.getElementById("sudoku-grid");
+            for (let row = 0; row < 9; row++) {
+                for (let col = 0; col < 9; col++) {
+                    let input = document.createElement("input");
+                    input.type = "number";
+                    input.classList.add("cell");
+                    input.min = 1;
+                    input.max = 9;
+                    input.value = puzzle[row][col] !== 0 ? puzzle[row][col] : "";
+                    if (puzzle[row][col] !== 0) {
+                        input.setAttribute("readonly", true);
+                    }
+                    input.dataset.row = row;
+                    input.dataset.col = col;
+                    grid.appendChild(input);
+                }
+            }
+        }
 
-----------------------------
-http://username.github.io
+        function checkSolution() {
+            let grid = document.querySelectorAll(".cell");
+            let board = Array.from({ length: 9 }, () => Array(9).fill(0));
+            
+            grid.forEach(cell => {
+                let row = cell.dataset.row;
+                let col = cell.dataset.col;
+                let value = parseInt(cell.value) || 0;
+                board[row][col] = value;
+            });
+            
+            if (isValidSudoku(board)) {
+                document.getElementById("message").innerText = "Congratulations! You solved it!";
+            } else {
+                document.getElementById("message").innerText = "Solution is incorrect. Try again!";
+            }
+        }
+
+        function isValidSudoku(board) {
+            function isValidRow(row) {
+                let nums = board[row].filter(n => n !== 0);
+                return new Set(nums).size === nums.length;
+            }
+            
+            function isValidCol(col) {
+                let nums = board.map(row => row[col]).filter(n => n !== 0);
+                return new Set(nums).size === nums.length;
+            }
+            
+            function isValidBox(startRow, startCol) {
+                let nums = [];
+                for (let r = 0; r < 3; r++) {
+                    for (let c = 0; c < 3; c++) {
+                        let value = board[startRow + r][startCol + c];
+                        if (value !== 0) nums.push(value);
+                    }
+                }
+                return new Set(nums).size === nums.length;
+            }
+            
+            for (let i = 0; i < 9; i++) {
+                if (!isValidRow(i) || !isValidCol(i)) return false;
+            }
+            
+            for (let r = 0; r < 9; r += 3) {
+                for (let c = 0; c < 9; c += 3) {
+                    if (!isValidBox(r, c)) return false;
+                }
+            }
+            return true;
+        }
+        
+        createSudokuGrid();
+    </script>
+</body>
+</html>
