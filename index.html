@@ -208,6 +208,22 @@
             return grid;
         }
 
+        function saveMove(cell) {
+            // Only save moves if the value is being changed (not readonly cells)
+            if (!cell.hasAttribute("readonly") && cell.value !== "") {
+                let oldValue = cell.dataset.previousValue || ""; // Get previous value or empty if not set
+                history.push({
+                    row: cell.dataset.row,
+                    col: cell.dataset.col,
+                    oldValue: oldValue, // Save the old value
+                    newValue: cell.value // Save the new value
+                });
+                
+                // Update dataset with the current value as "previous value" for future moves
+                cell.dataset.previousValue = cell.value;
+            }
+        }
+        
         function checkSolution() {
             let errors = 0;
             let emptyCells = 0;
@@ -243,22 +259,7 @@
             }
         }
         
-        function saveMove(cell) {
-            // Only save moves if the value is being changed (not readonly cells)
-            if (!cell.hasAttribute("readonly") && cell.value !== "") {
-                let oldValue = cell.dataset.previousValue || ""; // Get previous value or empty if not set
-                history.push({
-                    row: cell.dataset.row,
-                    col: cell.dataset.col,
-                    oldValue: oldValue, // Save the old value
-                    newValue: cell.value // Save the new value
-                });
-                
-                // Update dataset with the current value as "previous value" for future moves
-                cell.dataset.previousValue = cell.value;
-            }
-        }
-        
+       
         function undoMove() {
             if (history.length > 0) {
                 let lastMove = history.pop();
