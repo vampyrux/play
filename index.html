@@ -188,23 +188,26 @@
 
         function checkSolution() {
             let errors = 0;
+            let emptyCells = 0;
+            
             document.querySelectorAll(".cell").forEach(cell => {
                 let row = cell.dataset.row;
                 let col = cell.dataset.col;
-                if (cell.value != solution[row][col]) {
-                    if (cell.value != "") {
-                        errors++;
-                    }
+                
+                // Check if the cell is empty
+                if (cell.value === "") {
+                    emptyCells++;
+                } else if (cell.value != solution[row][col]) {
+                    errors++;
                 }
             });
-            
-            const emptyCells = document.querySelectorAll('.cell.empty'); // Assuming the empty cells have a class of 'empty'
-
-                if (emptyCells.length > 0) {
-                    document.getElementById("message").innerText = "The Sudoku is not solved yet.";
-                } else {
-                    document.getElementById("message").innerText = errors === 0 ? "Correct!" : `You have ${errors} errors.`;
-                }
+        
+            // Check if there are empty cells and display appropriate message
+            if (emptyCells > 0) {
+                document.getElementById("message").innerText = "The Sudoku is not solved yet.";
+            } else {
+                document.getElementById("message").innerText = errors === 0 ? "Correct!" : `You have ${errors} errors.`;
+            }
         }
         
         function getHint() {
