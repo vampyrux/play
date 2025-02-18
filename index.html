@@ -197,7 +197,14 @@
                     }
                 }
             });
-            document.getElementById("message").innerText = errors === 0 ? "Correct!" : `You have ${errors} errors.`;
+            
+            const emptyCells = document.querySelectorAll('.cell.empty'); // Assuming the empty cells have a class of 'empty'
+
+                if (emptyCells.length > 0) {
+                    document.getElementById("message").innerText = "The Sudoku is not solved yet.";
+                } else {
+                    document.getElementById("message").innerText = errors === 0 ? "Correct!" : `You have ${errors} errors.`;
+                }
         }
         
         function getHint() {
