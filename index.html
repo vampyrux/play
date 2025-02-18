@@ -187,13 +187,14 @@
         }
 
         function checkSolution() {
-            alert("Checking solution - this function can be implemented with full solution validation.");
             let errors = 0;
             document.querySelectorAll(".cell").forEach(cell => {
                 let row = cell.dataset.row;
                 let col = cell.dataset.col;
                 if (cell.value != solution[row][col]) {
-                    errors++;
+                    if (cell.value != "") {
+                        errors++;
+                    }
                 }
             });
             document.getElementById("message").innerText = errors === 0 ? "Correct!" : `You have ${errors} errors.`;
