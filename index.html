@@ -244,13 +244,17 @@
         
         function saveMove(cell) {
             // Only save moves if the value is being changed (not readonly cells)
-            if (!cell.hasAttribute("readonly")) {
+            if (!cell.hasAttribute("readonly") && cell.value !== "") {
+                let oldValue = cell.dataset.previousValue || ""; // Get previous value or empty if not set
                 history.push({
                     row: cell.dataset.row,
                     col: cell.dataset.col,
-                    oldValue: cell.value, // Save the old value
+                    oldValue: oldValue, // Save the old value
                     newValue: cell.value // Save the new value
                 });
+                
+                // Update dataset with the current value as "previous value" for future moves
+                cell.dataset.previousValue = cell.value;
             }
         }
         
@@ -261,6 +265,9 @@
                 
                 // Revert to the previous value
                 cell.value = lastMove.oldValue;
+
+                // Remove the previous value from the dataset (no longer needed after undo)
+                delete cell.dataset.previousValue;
             }
         }
         
