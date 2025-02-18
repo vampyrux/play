@@ -68,6 +68,8 @@
         <button onclick="checkSolution()">Check Solution</button>
         <button onclick="getHint()">Hint</button>
         <button onclick="undoMove()">Undo</button>
+        <button onclick="clearTable()">Clear Table</button>
+        <button onclick="printSudoku()">Print PDF</button>
     </div>
     <p id="message"></p>
     
@@ -104,60 +106,66 @@
             }
         }
 
+        function clearTable() {
+            document.querySelectorAll(".sudoku-container input:not([readonly])").forEach(input => input.value = "");
+        }
+
+        function printSudoku() {
+            let printWindow = window.open('', '', 'width=800,height=600');
+            printWindow.document.write('<html><head><title>Print Sudoku</title></head><body>');
+            printWindow.document.write('<h1>Sudoku Puzzle</h1>');
+            printWindow.document.write(document.querySelector(".sudoku-container").outerHTML);
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.print();
+        }
+
         function generatePuzzle(difficulty) {
-            let solution = [...Array(9)].map(() => Array(9).fill(0));
-            let puzzle = [...Array(9)].map(() => Array(9).fill(0));
-            
-            for (let i = 0; i < 9; i++) {
-                for (let j = 0; j < 9; j++) {
-                    solution[i][j] = ((i * 3 + Math.floor(i / 3) + j) % 9) + 1;
-                }
-            }
+            let solution = solveSudoku(Array(9).fill().map(() => Array(9).fill(0)));
+            let puzzle = JSON.parse(JSON.stringify(solution));
             
             let clues = difficulty === "easy" ? 40 : difficulty === "medium" ? 30 : difficulty === "hard" ? 25 : 20;
             let positions = Array.from({ length: 81 }, (_, i) => i).sort(() => Math.random() - 0.5);
-            for (let i = 0; i < clues; i++) {
+            for (let i = 0; i < 81 - clues; i++) {
                 let r = Math.floor(positions[i] / 9);
                 let c = positions[i] % 9;
-                puzzle[r][c] = solution[r][c];
+                puzzle[r][c] = 0;
             }
             return { puzzle, solution };
         }
 
-        function saveMove(cell) {
-            history.push({ row: cell.dataset.row, col: cell.dataset.col, value: cell.value });
-        }
-
-        function checkSolution() {
-            let errors = 0;
-            document.querySelectorAll(".cell").forEach(cell => {
-                let row = cell.dataset.row;
-                let col = cell.dataset.col;
-                if (cell.value != solution[row][col]) {
-                    errors++;
+        function solveSudoku(grid) {
+            function isValid(num, row, col) {
+                for (let i = 0; i < 9; i++) {
+                    if (grid[row][i] === num || grid[i][col] === num) return false;
+                    let boxRow = Math.floor(row / 3) * 3 + Math.floor(i / 3);
+                    let boxCol = Math.floor(col / 3) * 3 + i % 3;
+                    if (grid[boxRow][boxCol] === num) return false;
                 }
-            });
-            document.getElementById("message").innerText = errors === 0 ? "Correct!" : `You have ${errors} errors.`;
+                return true;
+            }
+
+            function solve() {
+                for (let row = 0; row < 9; row++) {
+                    for (let col = 0; col < 9; col++) {
+                        if (grid[row][col] === 0) {
+                            for (let num = 1; num <= 9; num++) {
+                                if (isValid(num, row, col)) {
+                                    grid[row][col] = num;
+                                    if (solve()) return true;
+                                    grid[row][col] = 0;
+                                }
+                            }
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+            solve();
+            return grid;
         }
 
-        function getHint() {
-            let emptyCells = [...document.querySelectorAll(".cell")].filter(cell => !cell.value);
-            if (emptyCells.length > 0) {
-                let randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-                let row = randomCell.dataset.row;
-                let col = randomCell.dataset.col;
-                randomCell.value = solution[row][col];
-            }
-        }
-
-        function undoMove() {
-            if (history.length > 0) {
-                let lastMove = history.pop();
-                let cell = document.querySelector(`[data-row='${lastMove.row}'][data-col='${lastMove.col}']`);
-                cell.value = "";
-            }
-        }
-        
         generateSudoku();
     </script>
 </body>
