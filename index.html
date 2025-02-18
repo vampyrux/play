@@ -217,11 +217,25 @@
             }
         }
         
+        function saveMove(cell) {
+            // Only save moves if the value is being changed (not readonly cells)
+            if (!cell.hasAttribute("readonly")) {
+                history.push({
+                    row: cell.dataset.row,
+                    col: cell.dataset.col,
+                    oldValue: cell.value, // Save the old value
+                    newValue: cell.value // Save the new value
+                });
+            }
+        }
+        
         function undoMove() {
             if (history.length > 0) {
                 let lastMove = history.pop();
                 let cell = document.querySelector(`[data-row='${lastMove.row}'][data-col='${lastMove.col}']`);
-                cell.value = "";
+                
+                // Revert to the previous value
+                cell.value = lastMove.oldValue;
             }
         }
         
