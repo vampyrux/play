@@ -131,10 +131,31 @@
         }
       
         function printSudoku() {
+            let gridHtml = document.querySelector(".sudoku-container").outerHTML;
+            
+            // Replace empty input values with placeholders (e.g., "&nbsp;" for empty cells)
+            gridHtml = gridHtml.replace(/<input[^>]*value=""[^>]*>/g, '<input readonly value="&nbsp;" disabled>');
+        
+            // Create a new window and write the grid with proper formatting
             let printWindow = window.open('', '', 'width=800,height=600');
-            printWindow.document.write('<html><head><title>Print Sudoku</title></head><body>');
+            printWindow.document.write('<html><head><title>Print Sudoku</title><style>');
+            
+            // Inline styles to maintain the grid's appearance
+            printWindow.document.write(`
+                body { font-family: Arial, sans-serif; text-align: center; }
+                .sudoku-container { display: grid; grid-template-columns: repeat(9, 40px); gap: 0; justify-content: center; width: 360px; margin: 20px auto; }
+                .cell { width: 40px; height: 40px; text-align: center; font-size: 18px; border: 1px solid black; }
+                .cell[readonly] { background-color: #ddd; }
+                .sudoku-container input:nth-child(3n) { border-right: 2px solid black; }
+                .sudoku-container input:nth-child(n+19):nth-child(-n+27), .sudoku-container input:nth-child(n+46):nth-child(-n+54) { border-bottom: 2px solid black; }
+                .sudoku-container input:nth-child(3n+1) { border-left: 2px solid black; }
+                .sudoku-container input:nth-child(-n+9) { border-top: 2px solid black; }
+                .sudoku-container input:nth-child(n+73) { border-bottom: 2px solid black; }
+            `);
+        
+            printWindow.document.write('</style></head><body>');
             printWindow.document.write('<h1>Sudoku Puzzle</h1>');
-            printWindow.document.write(document.querySelector(".sudoku-container").outerHTML);
+            printWindow.document.write(gridHtml);
             printWindow.document.write('</body></html>');
             printWindow.document.close();
             printWindow.print();
