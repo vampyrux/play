@@ -225,7 +225,7 @@
         
             // If there are empty cells, the Sudoku is not solved yet
             if (emptyCells > 0) {
-                document.getElementById("message").innerText = "The Sudoku is not solved yet.";
+                document.getElementById("message").innerText = errors === 0 ? "The Sudoku is not solved yet!" : `You have ${errors} errors.`;
             } else {
                 // If no empty cells and errors == 0, it's correct, otherwise show the number of errors
                 document.getElementById("message").innerText = errors === 0 ? "Correct!" : `You have ${errors} errors.`;
