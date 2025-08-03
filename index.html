@@ -68,14 +68,27 @@
     <label>Retirement Age:
       <input type="number" id="retirementAge" min="50" max="80" value="65">
     </label>
-    <label>Current Savings (€):
+    <label>Current Savings (£):
       <input type="number" id="currentSavings" min="0" value="10000">
     </label>
-    <label>Monthly Contribution (€):
+    <label>Monthly Contribution (£):
       <input type="number" id="monthlyContribution" min="0" value="500">
     </label>
     <label>Annual Return (%):
       <input type="number" id="annualReturn" step="0.1" min="0" value="5">
+    </label>
+    <label>Target Standard:
+      <select id="targetStandard">
+        <option value="minimum">Minimum</option>
+        <option value="moderate" selected>Moderate</option>
+        <option value="comfortable">Comfortable</option>
+      </select>
+    </label>
+    <label>Final Salary (£):
+      <input type="number" id="finalSalary" min="0" value="40000">
+    </label>
+    <label>Years Worked (for company pension):
+      <input type="number" id="yearsWorked" min="0" max="50" value="30">
     </label>
   </div>
 
@@ -84,20 +97,30 @@
   <canvas id="pensionChart" height="100"></canvas>
 
   <footer>
-    © 2025 PensionTool by [YourName] • Open Source on <a href="https://github.com/">GitHub</a>
+    © 2025 PensionTool by vampurux • Open Source on <a href="https://github.com/">GitHub</a>
   </footer>
 
   <script>
     const inputs = document.querySelectorAll("input");
     const resultText = document.getElementById("resultText");
     const ctx = document.getElementById("pensionChart").getContext("2d");
-
+    const targetStandard = document.getElementById("targetStandard").value;
+    const standardIncome = {minimum:13400, moderate:31700, comfortable:43900}[targetStandard];
+    const statePension = 11973;
+    const salary = parseFloat(document.getElementById("finalSalary").value);
+    const years = parseInt(document.getElementById("yearsWorked").value);
+    const companyPension = 0.01 * salary * years;
+    
+    const incomeGap = standardIncome - statePension - companyPension;
+    const annuityRate = 0.059; // 5.9%
+    const neededPot = incomeGap > 0 ? incomeGap / annuityRate : 0;
+    
     let pensionChart = new Chart(ctx, {
       type: 'line',
       data: {
         labels: [],
         datasets: [{
-          label: 'Projected Pension Fund (€)',
+          label: 'Projected Pension Fund (£)',
           data: [],
           borderWidth: 2,
           fill: true,
@@ -114,7 +137,7 @@
           },
           y: {
             beginAtZero: true,
-            title: { display: true, text: 'Pension Value (€)' }
+            title: { display: true, text: 'Pension Value (£)' }
           }
         }
       }
@@ -151,10 +174,19 @@
 
       // Update result text
       resultText.innerHTML = `
-        If you continue saving <strong>€${monthlyContribution}</strong>/month and earn <strong>${(annualReturn * 100).toFixed(1)}%</strong> annually,
+        If you continue saving <strong>£${monthlyContribution}</strong>/month and earn <strong>${(annualReturn * 100).toFixed(1)}%</strong> annually,
         your pension fund at age <strong>${retirementAge}</strong> could reach:
-        <div style="font-size: 1.5em; font-weight: bold;">€${futureValue.toFixed(2)}</div>
+        <div style="font-size: 1.5em; font-weight: bold;">£${futureValue.toFixed(2)}</div>
       `;
+      resultText.innerHTML += `
+        <p><strong>Target standard:</strong> ${targetStandard} → £${standardIncome.toLocaleString()}</p>
+        <p><strong>State Pension:</strong> £${statePension.toLocaleString()}</p>
+        <p><strong>Company pension:</strong> £${companyPension.toLocaleString()}</p>
+        <p><strong>Income gap:</strong> £${incomeGap > 0 ? incomeGap.toLocaleString() : 0} needed from private savings</p>
+        <p><strong>Required private pot at 5.9%:</strong> £${neededPot.toLocaleString(undefined,{maximumFractionDigits:0})}</p>
+        <p><strong>Your projected private pot:</strong> £${futureValue.toFixed(0)}</p>
+        <p><strong>Shortfall/Surplus:</strong> £${(futureValue - neededPot).toFixed(0)}</p>
+`;
     }
 
     // Initial update
