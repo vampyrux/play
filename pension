@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kids Travel Book</title>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Great Vibes', cursive;
+            text-align: center;
+            background: white;
+            color: black;
+            padding: 20px;
+        }
+        .cover-page {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .cover-page img {
+            width: 80%;
+            max-width: 600px;
+            border-radius: 10px;
+        }
+        .cover-title {
+            font-size: 36px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .game-section {
+            background: #f8f8f8;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .controls {
+            margin: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            background: #ff66b2;
+            color: white;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #e05599;
+        }
+    </style>
+</head>
+<body>
+    <div class="cover-page">
+        <img src="disney-princess-cover.jpg" alt="Disney Princess Cover">
+        <div class="cover-title">Princess Travel Games</div>
+    </div>
+    
+    <div class="controls">
+        <button onclick="refreshGames()">Refresh Games</button>
+        <button onclick="printPage()">Print Games</button>
+    </div>
+
+    <div id="games-container">
+        <div class="game-section">
+            <h2>What's Your Travel Name?</h2>
+            <p>Find your royal travel name based on your birth month, date, and favorite color!</p>
+            <button onclick="generateTravelName()">Generate Name</button>
+            <p id="travel-name"></p>
+        </div>
+        
+        <div class="game-section">
+            <h2>Sudoku</h2>
+            <p>Fill the grid with numbers 1-6, making sure each row, column, and box contains each number only once.</p>
+            <canvas id="sudokuCanvas"></canvas>
+        </div>
+        
+        <div class="game-section">
+            <h2>Tic Tac Toe</h2>
+            <p>Play a fun game of Tic Tac Toe!</p>
+            <table id="ticTacToe"></table>
+        </div>
+    </div>
+    
+    <script>
+        function refreshGames() {
+            location.reload();
+        }
+        function printPage() {
+            window.print();
+        }
+        
+        function generateTravelName() {
+            const months = ["Princess", "Lady", "Baroness", "Queen", "Madam", "Countess", "Duchess", "Captainess", "Huntress", "Lady", "Empress", "Princess"];
+            const names = ["Annabelle", "Mia", "Keira", "Ursula", "Celeste", "Jasmine", "Aurora", "Rapunzel", "Anna", "Ariel", "Diana", "Elsa", "Merida", "Belle", "Amelia", "Audrey", "Alice", "Bianca", "Celia", "Cleo", "Daisy", "Flora", "Moana", "Jane", "Jessie", "Lilo", "Nala", "Rosie", "Tiana", "Violet", "Esmeralda"];
+            const colors = ["of the Royalty", "of the Sun", "of the Seas", "of the Mountains", "of the Jungle", "of the Lake", "of the Ice", "of the Desert", "of the Night", "of the Sky", "of the Stars"];
+            let month = Math.floor(Math.random() * 12);
+            let day = Math.floor(Math.random() * 31);
+            let color = Math.floor(Math.random() * 11);
+            document.getElementById("travel-name").innerText = `${months[month]} ${names[day]} ${colors[color]}`;
+        }
+        
+        function createTicTacToe() {
+            let table = document.getElementById("ticTacToe");
+            table.innerHTML = "";
+            for (let i = 0; i < 3; i++) {
+                let row = table.insertRow();
+                for (let j = 0; j < 3; j++) {
+                    let cell = row.insertCell();
+                    cell.innerText = "";
+                    cell.style.width = "60px";
+                    cell.style.height = "60px";
+                    cell.style.fontSize = "24px";
+                    cell.style.textAlign = "center";
+                    cell.style.border = "1px solid black";
+                    cell.addEventListener("click", function () {
+                        if (cell.innerText === "") {
+                            cell.innerText = "X";
+                        }
+                    });
+                }
+            }
+        }
+        
+        createTicTacToe();
+    </script>
+</body>
+</html>
