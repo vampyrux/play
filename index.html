@@ -5,16 +5,16 @@
   <title>UK Monthly Retirement Income Model</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body { font-family: Arial; max-width:800px; margin:auto; padding:2em; background:#f4f7f8; color:#333;}
-    .inputs { display:grid; grid-template-columns:1fr 1fr; gap:1em; }
-    label { display:block; margin-bottom:0.5em; }
-    input, select { width:100%; padding:0.4em; }
-    .result { margin-top:1em; background:#e0f7ea; padding:1em; border-left:4px solid #2ecc71; }
-    canvas { margin-top:2em; }
+    body { font-family: Arial; max-width: 1000px; margin: auto; padding: 2em; background: #f4f7f8; color: #333; }
+    .inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 1em; }
+    label { display: block; margin-bottom: 0.5em; }
+    input { width: 100%; padding: 0.4em; }
+    .result { margin-top: 1em; background: #e0f7ea; padding: 1em; border-left: 4px solid #2ecc71; }
+    canvas { margin-top: 2em; }
   </style>
 </head>
 <body>
-<h1>UK Retirement Income Forecast Model</h1>
+<h1>UK Retirement Monthly Income Projection</h1>
 <div class="inputs">
   <label>Current Age: <input type="number" id="currentAge" value="30" min="18" max="70"></label>
   <label>Retirement Age: <input type="number" id="retirementAge" value="57" min="50" max="75"></label>
@@ -23,7 +23,7 @@
   <label>Annual Return (%): <input type="number" id="annualReturn" value="5" step="0.1" min="0"></label>
   <label>Inflation (%): <input type="number" id="inflation" value="2" step="0.1" min="0"></label>
   <label>Current Salary (£): <input type="number" id="currentSalary" value="40000" min="0"></label>
-  <label>Years Worked (company pension accrual at retirement): <input type="number" id="yearsWorked" value="30" min="0" max="50"></label>
+  <label>Years Worked (by retirement): <input type="number" id="yearsWorked" value="30" min="0" max="50"></label>
   <label>Target monthly income (£): <input type="number" id="targetMonthly" value="2400" min="0"></label>
 </div>
 
@@ -33,9 +33,23 @@
 <script>
 const ctx = document.getElementById('chartIncome').getContext('2d');
 const chart = new Chart(ctx, {
-  type: 'line', data:{ labels:[], datasets:[{
-    label:'Private monthly income projection (£)', data:[], borderColor:'#0077cc', backgroundColor:'rgba(0,119,204,0.1)', fill:true
-  }]}, options:{ scales:{ x:{ title:{ display:true, text:'Age' }}, y:{ title:{ display:true, text:'£ / month' }, beginAtZero:true }}}
+  type: 'line',
+  data: {
+    labels: [],
+    datasets: [{
+      label: 'Projected Total Monthly Income (£)',
+      data: [],
+      borderColor: '#0077cc',
+      backgroundColor: 'rgba(0,119,204,0.1)',
+      fill: true
+    }]
+  },
+  options: {
+    scales: {
+      x: { title: { display: true, text: 'Age' } },
+      y: { title: { display: true, text: '£ / month' }, beginAtZero: true }
+    }
+  }
 });
 
 function update() {
@@ -43,56 +57,69 @@ function update() {
   const retAge = +document.getElementById('retirementAge').value;
   const current = +document.getElementById('currentSavings').value;
   const contrib = +document.getElementById('monthlyContribution').value;
-  const ret = +document.getElementById('annualReturn').value/100;
-  const infl = +document.getElementById('inflation').value/100;
+  const ret = +document.getElementById('annualReturn').value / 100;
+  const infl = +document.getElementById('inflation').value / 100;
   const salary = +document.getElementById('currentSalary').value;
   const yrs = +document.getElementById('yearsWorked').value;
   const target = +document.getElementById('targetMonthly').value;
 
-  const months = (retAge - age)*12;
-  const mRet = Math.pow(1+ret,1/12)-1;
-  const mInfl = Math.pow(1+infl,1/12)-1;
-  let fv = current;
-  chart.data.labels=[]; chart.data.datasets[0].data=[];
+  const endAge = 90;
+  const months = (endAge - age) * 12;
+  const mRet = Math.pow(1 + ret, 1 / 12) - 1;
+  const mInfl = Math.pow(1 + infl, 1 / 12) - 1;
 
-  for(let i=0;i<=months;i++){
-    fv = fv*(1+mRet) + contrib;
-    if(i%12===0) {
-      const a = age + i/12;
-      const monthlySalary = salary * Math.pow(1+infl,a-age);
-      chart.data.labels.push(a);
-      // income from private pot: assume 5% withdrawal
-      chart.data.datasets[0].data.push((fv*0.05/12).toFixed(0));
+  let savings = current;
+  let pot = [];
+  let finalPot = 0;
+
+  chart.data.labels = [];
+  chart.data.datasets[0].data = [];
+
+  let finalSalary = salary * Math.pow(1 + infl, retAge - age);
+  let companyAnnual = 0.01 * 0.8308 * finalSalary * yrs;
+  let companyMonthly = companyAnnual / 12;
+
+  const statePensionMonthly = 230.25 * 52 / 12;
+
+  for (let i = 0; i <= months; i++) {
+    const currAge = age + i / 12;
+    const wholeAge = Math.floor(currAge);
+
+    if (currAge < retAge) {
+      savings = savings * (1 + mRet) + contrib;
+      if (currAge + 1 / 12 >= retAge) finalPot = savings;
+    } else {
+      savings = savings * (1 + mRet);
+    }
+
+    let privateIncome = 0;
+    let stateIncome = currAge >= 67 ? statePensionMonthly : 0;
+    let companyIncome = currAge >= retAge ? companyMonthly : 0;
+
+    if (currAge >= retAge) {
+      const remainingYears = Math.max(1, 90 - currAge);
+      privateIncome = finalPot / (remainingYears * 12);
+    }
+
+    let totalMonthly = privateIncome + stateIncome + companyIncome;
+
+    if (currAge >= retAge && (i % 12 === 0)) {
+      chart.data.labels.push(wholeAge.toString());
+      chart.data.datasets[0].data.push(totalMonthly.toFixed(2));
     }
   }
   chart.update();
 
-  // state pension begins at age 67
-  const weeklySP = 230.25;
-  const monthlySP = (age<67 && retAge<67) ? 0 : (retAge>=67 ? weeklySP*52/12 : 0);
-  // company pension begins at retirement age, defined benefit at 1% per year final salary
-  const finalSalary = salary * Math.pow(1+infl, retAge-age);
-  const companyAnnual = (retAge>=retAge) ? 0.01*finalSalary*yrs : 0;
-  const companyMonthly = companyAnnual/12;
-
-  const privateMonthly = fv*0.05/12;
-  const totalMonthly = privateMonthly + monthlySP + companyMonthly;
-  const shortfall = target - totalMonthly;
-
-  let html = `<p>If you retire at <strong>${retAge}</strong> years old:</p>`;
-  html += `<ul>
-    <li>State Pension scheduled: £${monthlySP.toFixed(0)}/month</li>
-    <li>Company pension: £${companyMonthly.toFixed(0)}/month</li>
-    <li>Projected private income: £${privateMonthly.toFixed(0)}/month</li>
-    <li><strong>Total income</strong>: £${totalMonthly.toFixed(0)}/month</li>
-    <li><strong>Target income</strong>: £${target.toFixed(0)}/month</li>
-    <li><strong>Shortfall</strong>: £${(shortfall>0? shortfall:0).toFixed(0)} £/month</li>
-    <li>${shortfall<0? "Surplus":"Gap needs to be covered"}</li>
-  </ul>`;
-  document.getElementById('resultText').innerHTML = html;
+  document.getElementById('resultText').innerHTML = `
+    <p>Retiring at <strong>${retAge}</strong>, projected salary: <strong>£${finalSalary.toFixed(0)}</strong></p>
+    <ul>
+      <li>State Pension: £${statePensionMonthly.toFixed(0)}/month from 67</li>
+      <li>Company Pension: £${companyMonthly.toFixed(0)}/month from ${retAge}</li>
+      <li>Final savings pot at retirement: <strong>£${finalPot.toFixed(0)}</strong></li>
+    </ul>`;
 }
 
-document.querySelectorAll('input').forEach(el=> el.addEventListener('input', update));
+document.querySelectorAll('input').forEach(el => el.addEventListener('input', update));
 update();
 </script>
 </body>
