@@ -1,3 +1,4 @@
+// Full HTML with chart and table showing savings pot from current age to 90
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -32,9 +33,6 @@
       padding: 1em;
       border-left: 4px solid #2ecc71;
     }
-    canvas {
-      margin-top: 2em;
-    }
     table {
       width: 100%;
       border-collapse: collapse;
@@ -55,6 +53,9 @@
       font-weight: bold;
       margin-bottom: 0.5em;
     }
+    #savingsChart {
+      margin-top: 3em;
+    }
   </style>
 </head>
 <body>
@@ -67,172 +68,146 @@
     <label>Annual Return (%): <input type="number" id="annualReturn" value="5" step="0.1" min="0" /></label>
     <label>Inflation (%): <input type="number" id="inflation" value="2" step="0.1" min="0" /></label>
     <label>Current Salary (£): <input type="number" id="currentSalary" value="40000" min="0" /></label>
-    <label>Years Worked (by retirement): <input type="number" id="yearsWorked" value="30" min="0" max="50" /></label>
+    <label>Years Worked (by retirement - max 35): <input type="number" id="yearsWorked" value="30" min="0" max="50" /></label>
     <label>Target monthly income (£): <input type="number" id="targetMonthly" value="2400" min="0" /></label>
   </div>
 
   <div class="result" id="resultText"></div>
-  <canvas id="chartIncome" height="100"></canvas>
-
+  <canvas id="savingsChart" width="800" height="300"></canvas>
   <div id="potTableContainer"></div>
 
 <script>
-  const ctx = document.getElementById('chartIncome').getContext('2d');
-  const chart = new Chart(ctx, {
+function numberWithCommas(x) {
+  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+let chart;
+
+function update() {
+  const age = +document.getElementById('currentAge').value;
+  const retAge = +document.getElementById('retirementAge').value;
+  const current = +document.getElementById('currentSavings').value;
+  const contrib = +document.getElementById('monthlyContribution').value;
+  const ret = +document.getElementById('annualReturn').value / 100;
+  const infl = +document.getElementById('inflation').value / 100;
+  const salary = +document.getElementById('currentSalary').value;
+  const yrs = +document.getElementById('yearsWorked').value;
+  const target = +document.getElementById('targetMonthly').value;
+
+  const endAge = 90;
+  const totalMonths = (endAge - age) * 12;
+  const mRet = Math.pow(1 + ret, 1 / 12) - 1;
+
+  const yearsToRetire = retAge - age;
+  const finalSalary = salary * Math.pow(1 + infl, yearsToRetire);
+
+  const companyAnnual = 0.01 * 0.8308 * finalSalary * yrs * 23 / (90 - retAge);
+  const companyMonthlyGross = companyAnnual / 12;
+
+  const statePensionWeekly = 230.25;
+  const statePensionMonthlyGross = (statePensionWeekly * 52) / 12 / 35 * Math.max(yrs, 35);
+  const taxFreeAllowance = 12570;
+
+  let savings = current;
+  let savingsAtRetirement = 0;
+  let savingsFinal = 0;
+  let savingsOverTime = [];
+  let rows = [];
+
+  for (let m = 0; m < totalMonths; m++) {
+    const currAge = age + m / 12;
+    const year = Math.floor(currAge);
+    const monthsSinceRet = m - (retAge - age) * 12;
+    const targetInflated = target * Math.pow(1 + infl, monthsSinceRet / 12);
+
+    let stateGross = currAge >= 67 ? statePensionMonthlyGross : 0;
+    let companyGross = currAge >= retAge ? companyMonthlyGross : 0;
+    let totalGross = stateGross + companyGross;
+    let annualGross = totalGross * 12;
+    let taxable = Math.max(0, annualGross - taxFreeAllowance);
+    let tax = taxable * 0.20 / 12;
+    let coreNet = totalGross - tax;
+    let drawings = 0;
+
+    if (currAge < retAge) {
+      savings = savings * (1 + mRet) + contrib;
+    } else {
+      drawings = Math.max(0, targetInflated - coreNet);
+      savings = savings * (1 + mRet) - drawings;
+    }
+
+    if (m % 12 === 11) {
+      savingsOverTime.push({ age: year, pot: Math.round(savings) });
+      if (year >= retAge) {
+        rows.push(`<tr><td>${year}</td><td>£${numberWithCommas(companyGross.toFixed(0))}</td><td>£${numberWithCommas(stateGross.toFixed(0))}</td><td>£${numberWithCommas(coreNet.toFixed(0))}</td><td>£${numberWithCommas((coreNet + drawings).toFixed(0))}</td><td>£${numberWithCommas(drawings.toFixed(0))}</td><td>£${numberWithCommas(savings.toFixed(0))}</td></tr>`);
+      }
+    }
+
+    if (m === (retAge - age) * 12 - 1) {
+      savingsAtRetirement = savings;
+    }
+  }
+  savingsFinal = savings;
+
+  document.getElementById('resultText').innerHTML = `
+    <p>Retiring at <strong>${retAge}</strong>, projected final salary: <strong>£${numberWithCommas(finalSalary.toFixed(0))}</strong></p>
+    <ul>
+      <li>Target monthly income (inflation adjusted): £${numberWithCommas((target * Math.pow(1 + infl, yearsToRetire)).toFixed(0))}</li>
+      <li>Company Pension (gross): £${numberWithCommas(companyMonthlyGross.toFixed(0))}/month from ${retAge}</li>
+      <li>State Pension (gross): £${numberWithCommas(statePensionMonthlyGross.toFixed(0))}/month from 67</li>
+      <li>Final savings pot at retirement: <strong>£${numberWithCommas(savingsAtRetirement.toFixed(0))}</strong></li>
+      <li>Final savings pot at age 90: <strong>£${numberWithCommas(savingsFinal.toFixed(0))}</strong></li>
+    </ul>
+  `;
+
+  const ctx = document.getElementById('savingsChart').getContext('2d');
+  if (chart) chart.destroy();
+  chart = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: [],
+      labels: savingsOverTime.map(p => p.age),
       datasets: [{
-        label: 'Projected Total Monthly Income (£)',
-        data: [],
-        borderColor: '#0077cc',
-        backgroundColor: 'rgba(0,119,204,0.1)',
-        fill: true
+        label: 'Savings Pot (£)',
+        data: savingsOverTime.map(p => p.pot),
+        borderColor: 'green',
+        backgroundColor: 'rgba(46,204,113,0.2)',
+        fill: true,
+        tension: 0.1
       }]
     },
     options: {
+      responsive: true,
       scales: {
-        x: { title: { display: true, text: 'Age' } },
-        y: { title: { display: true, text: '£ / month' }, beginAtZero: true }
+        y: {
+          beginAtZero: false
+        }
       }
     }
   });
 
-  function numberWithCommas(x) {
-    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  }
-
-  function update() {
-    const age = +document.getElementById('currentAge').value;
-    const retAge = +document.getElementById('retirementAge').value;
-    const current = +document.getElementById('currentSavings').value;
-    const contrib = +document.getElementById('monthlyContribution').value;
-    const ret = +document.getElementById('annualReturn').value / 100;
-    const infl = +document.getElementById('inflation').value / 100;
-    const salary = +document.getElementById('currentSalary').value;
-    const yrs = +document.getElementById('yearsWorked').value;
-    const target = +document.getElementById('targetMonthly').value;
-
-    const endAge = 90;
-    const totalMonths = (endAge - age) * 12;
-    const mRet = Math.pow(1 + ret, 1 / 12) - 1;
-
-    // Calculate final salary at retirement (inflated)
-    const yearsToRetire = retAge - age;
-    const finalSalary = salary * Math.pow(1 + infl, yearsToRetire);
-
-    // Company pension monthly from retirement age (1% of final salary per worked year)
-    const companyAnnual = 0.01 * 0.8308 * finalSalary * yrs;
-    const companyMonthly = companyAnnual / 12;
-
-    // State pension weekly amount (approximate)
-    const statePensionWeekly = 230.25;
-    const statePensionMonthlyGross = (statePensionWeekly * 52) / 12;
-
-    // Tax assumptions: 20% on company + state pensions
-    const taxRate = 0.20;
-
-    // Initialize savings and variables
-    let savings = current;
-    let savingsAtRetirement = 0;
-    let potValuesByYear = []; // array of { age: xx, pot: xx, drawing: xx }
-
-    // Calculate savings growth and contributions until retirement
-    for (let m = 0; m < totalMonths; m++) {
-      const currAge = age + m / 12;
-      if (currAge < retAge) {
-        savings = savings * (1 + mRet) + contrib;
-      } else {
-        break;
-      }
-    }
-    savingsAtRetirement = savings;
-
-    // Now simulate monthly withdrawals & growth from retirement to 90
-    savings = savingsAtRetirement;
-
-    const retirementMonths = (endAge - retAge) * 12;
-
-    for (let m = 0; m <= retirementMonths; m++) {
-      const currAge = retAge + m / 12;
-      const wholeAge = Math.floor(currAge);
-
-      // State pension taxable and starts at 67, even if retirement < 67
-      const stateIncomeGross = currAge >= 67 ? statePensionMonthlyGross : 0;
-      const stateIncomeNet = stateIncomeGross * (1 - taxRate);
-
-      // Company pension taxable, starts at retirement age
-      const companyIncomeNet = currAge >= retAge ? companyMonthly * (1 - taxRate) : 0;
-
-      // Max monthly private income to meet target but not negative
-      let privateIncome = Math.max(0, target - (stateIncomeNet + companyIncomeNet));
-
-      // Withdraw private income from savings (monthly)
-      savings = savings * (1 + mRet) - privateIncome;
-      if (savings < 0) savings = 0;
-
-      // Chart data once per year
-      if (m % 12 === 0) {
-        chart.data.labels.push(wholeAge.toString());
-        chart.data.datasets[0].data.push((privateIncome + stateIncomeNet + companyIncomeNet).toFixed(0));
-      }
-
-      // Save yearly pot and monthly drawing on year-end
-      if (m % 12 === 11) {
-        potValuesByYear.push({
-          age: wholeAge,
-          pot: Math.round(savings),
-          drawing: Math.round(privateIncome)
-        });
-      }
-    }
-
-    chart.update();
-
-    // Show pensions net amounts for user info (state depends on retirement age)
-    const displayStatePensionNet = retAge >= 67 ? statePensionMonthlyGross * (1 - taxRate) : statePensionMonthlyGross * (1 - taxRate);
-
-    document.getElementById('resultText').innerHTML = `
-      <p>Retiring at <strong>${retAge}</strong>, projected final salary: <strong>£${numberWithCommas(finalSalary.toFixed(0))}</strong></p>
-      <ul>
-        <li>State Pension (net): £${numberWithCommas(displayStatePensionNet.toFixed(0))}/month from 67</li>
-        <li>Company Pension (net): £${numberWithCommas((companyMonthly * (1 - taxRate)).toFixed(0))}/month from ${retAge}</li>
-        <li>Final savings pot at retirement: <strong>£${numberWithCommas(savingsAtRetirement.toFixed(0))}</strong></li>
-      </ul>
-      <p>Target total monthly income: £${numberWithCommas(target)}</p>
-    `;
-
-    // Render savings pot table with drawings
-    let tableHtml = `<table><caption>Savings Pot and Drawings by Year</caption>
-      <thead><tr>
-        <th>Age</th>
-        <th>Savings Pot (£)</th>
-        <th>Drawings per month (£)</th>
-      </tr></thead><tbody>`;
-
-    potValuesByYear.forEach(row => {
-      tableHtml += `
+  document.getElementById('potTableContainer').innerHTML = `
+    <table>
+      <caption>Annual Pension Overview from Age ${retAge}</caption>
+      <thead>
         <tr>
-          <td>${row.age}</td>
-          <td>${numberWithCommas(row.pot)}</td>
-          <td>${numberWithCommas(row.drawing)}</td>
+          <th>Age</th>
+          <th>Company Pension (Gross)</th>
+          <th>State Pension (Gross)</th>
+          <th>Total Core Pension (Net)</th>
+          <th>Monthly Actual Pension</th>
+          <th>Drawings per Month</th>
+          <th>Savings Pot</th>
         </tr>
-      `;
-    });
+      </thead>
+      <tbody>${rows.join('')}</tbody>
+    </table>`;
+}
 
-    tableHtml += '</tbody></table>';
-    document.getElementById('potTableContainer').innerHTML = tableHtml;
-  }
+document.querySelectorAll('input').forEach(input => {
+  input.addEventListener('input', update);
+});
 
-  document.querySelectorAll('input').forEach(input => {
-    input.addEventListener('input', () => {
-      chart.data.labels = [];
-      chart.data.datasets[0].data = [];
-      update();
-    });
-  });
-
-  update();
+update();
 </script>
 </body>
 </html>
