@@ -1,130 +1,191 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kids Travel Book</title>
-    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Great Vibes', cursive;
-            text-align: center;
-            background: white;
-            color: black;
-            padding: 20px;
-        }
-        .cover-page {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-        .cover-page img {
-            width: 80%;
-            max-width: 600px;
-            border-radius: 10px;
-        }
-        .cover-title {
-            font-size: 36px;
-            font-weight: bold;
-            margin-top: 20px;
-        }
-        .game-section {
-            background: #f8f8f8;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .controls {
-            margin: 20px;
-        }
-        button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            background: #ff66b2;
-            color: white;
-            font-weight: bold;
-        }
-        button:hover {
-            background: #e05599;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UK Retirement Income Projection</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f5fff5;
+      color: #003300;
+      background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
+      background-size: cover;
+    }
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 2rem;
+    }
+    h1, h2 {
+      text-align: center;
+      color: #228B22;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 0 15px rgba(34, 139, 34, 0.3);
+    }
+    label {
+      display: block;
+      margin: 0.5rem 0 0.2rem;
+      font-weight: bold;
+    }
+    input {
+      width: 100%;
+      padding: 0.5rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      margin-bottom: 0.3rem;
+      font-size: 1rem;
+    }
+    .input-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.2rem;
+    }
+    .input-field {
+      margin-bottom: 1rem;
+    }
+    .recommendation {
+      font-size: 0.85rem;
+      color: #555;
+      font-style: italic;
+    }
+    .output-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+    .output-box {
+      background: #f0fff0;
+      border-radius: 8px;
+      padding: 1rem;
+      border-left: 6px solid #32CD32;
+    }
+    .output-title {
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+    .output-value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #006400;
+      margin-top: 0.3rem;
+    }
+    canvas {
+      background: #f0fff0;
+      border-radius: 12px;
+      padding: 1rem;
+    }
+    table {
+      width: 100%;
+      margin-top: 2rem;
+      border-collapse: collapse;
+      background: #ffffff;
+      color: #003300;
+    }
+    th, td {
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+    th {
+      background: #ccffcc;
+    }
+  </style>
 </head>
 <body>
-    <div class="cover-page">
-        <img src="disney-princess-cover.jpg" alt="Disney Princess Cover">
-        <div class="cover-title">Princess Travel Games</div>
-    </div>
-    
-    <div class="controls">
-        <button onclick="refreshGames()">Refresh Games</button>
-        <button onclick="printPage()">Print Games</button>
+  <div class="container">
+    <h1>UK Retirement Income Projection</h1>
+    <div class="card">
+      <h2>📅 Inputs</h2>
+      <form id="inputs">
+        <div class="input-group">
+          <div class="input-field">
+            <label>Current Age</label>
+            <input type="number" id="currentAge" min="18" max="66" value="40">
+            <div class="recommendation">Recommended: 40</div>
+          </div>
+          <div class="input-field">
+            <label>Retirement Age</label>
+            <input type="number" id="retirementAge" min="57" max="90" value="67">
+            <div class="recommendation">Minimum: 57</div>
+          </div>
+          <div class="input-field">
+            <label>Current Savings (£)</label>
+            <input type="number" id="currentSavings" value="50000">
+            <div class="recommendation">Recommended: £50,000</div>
+          </div>
+          <div class="input-field">
+            <label>Monthly Contributions (£)</label>
+            <input type="number" id="monthlyContributions" value="500">
+            <div class="recommendation">Recommended: £500–£1,000</div>
+          </div>
+          <div class="input-field">
+            <label>Annual Investment Return (%)</label>
+            <input type="number" step="0.1" id="investmentReturn" value="5">
+            <div class="recommendation">Recommended: 5%–7%</div>
+          </div>
+          <div class="input-field">
+            <label>Annual Inflation Rate (%)</label>
+            <input type="number" step="0.1" id="inflationRate" value="2.5">
+            <div class="recommendation">Recommended: 2.5%</div>
+          </div>
+          <div class="input-field">
+            <label>Current Salary (£)</label>
+            <input type="number" id="currentSalary" value="45000">
+            <div class="recommendation">Recommended: Current gross annual salary</div>
+          </div>
+          <div class="input-field">
+            <label>Employment Year</label>
+            <input type="number" id="employmentYear" value="2010">
+            <div class="recommendation">When you started working</div>
+          </div>
+          <div class="input-field">
+            <label>Target Monthly Income (£)</label>
+            <input type="number" id="targetIncome" value="2000">
+            <div class="recommendation">Recommended: 60–70% of salary</div>
+          </div>
+        </div>
+      </form>
     </div>
 
-    <div id="games-container">
-        <div class="game-section">
-            <h2>What's Your Travel Name?</h2>
-            <p>Find your royal travel name based on your birth month, date, and favorite color!</p>
-            <button onclick="generateTravelName()">Generate Name</button>
-            <p id="travel-name"></p>
-        </div>
-        
-        <div class="game-section">
-            <h2>Sudoku</h2>
-            <p>Fill the grid with numbers 1-6, making sure each row, column, and box contains each number only once.</p>
-            <canvas id="sudokuCanvas"></canvas>
-        </div>
-        
-        <div class="game-section">
-            <h2>Tic Tac Toe</h2>
-            <p>Play a fun game of Tic Tac Toe!</p>
-            <table id="ticTacToe"></table>
-        </div>
+    <div class="card">
+      <h2>📊 Outputs <span id="retireLabel">at Retirement</span></h2>
+      <div class="output-grid" id="outputGrid"></div>
     </div>
-    
-    <script>
-        function refreshGames() {
-            location.reload();
-        }
-        function printPage() {
-            window.print();
-        }
-        
-        function generateTravelName() {
-            const months = ["Princess", "Lady", "Baroness", "Queen", "Madam", "Countess", "Duchess", "Captainess", "Huntress", "Lady", "Empress", "Princess"];
-            const names = ["Annabelle", "Mia", "Keira", "Ursula", "Celeste", "Jasmine", "Aurora", "Rapunzel", "Anna", "Ariel", "Diana", "Elsa", "Merida", "Belle", "Amelia", "Audrey", "Alice", "Bianca", "Celia", "Cleo", "Daisy", "Flora", "Moana", "Jane", "Jessie", "Lilo", "Nala", "Rosie", "Tiana", "Violet", "Esmeralda"];
-            const colors = ["of the Royalty", "of the Sun", "of the Seas", "of the Mountains", "of the Jungle", "of the Lake", "of the Ice", "of the Desert", "of the Night", "of the Sky", "of the Stars"];
-            let month = Math.floor(Math.random() * 12);
-            let day = Math.floor(Math.random() * 31);
-            let color = Math.floor(Math.random() * 11);
-            document.getElementById("travel-name").innerText = `${months[month]} ${names[day]} ${colors[color]}`;
-        }
-        
-        function createTicTacToe() {
-            let table = document.getElementById("ticTacToe");
-            table.innerHTML = "";
-            for (let i = 0; i < 3; i++) {
-                let row = table.insertRow();
-                for (let j = 0; j < 3; j++) {
-                    let cell = row.insertCell();
-                    cell.innerText = "";
-                    cell.style.width = "60px";
-                    cell.style.height = "60px";
-                    cell.style.fontSize = "24px";
-                    cell.style.textAlign = "center";
-                    cell.style.border = "1px solid black";
-                    cell.addEventListener("click", function () {
-                        if (cell.innerText === "") {
-                            cell.innerText = "X";
-                        }
-                    });
-                }
-            }
-        }
-        
-        createTicTacToe();
-    </script>
+
+    <div class="card">
+      <h2>📈 Savings Pot vs Age</h2>
+      <canvas id="savingsChart"></canvas>
+    </div>
+
+    <div class="card">
+      <h2>📋 Annual Breakdown</h2>
+      <table id="breakdownTable">
+        <thead>
+          <tr>
+            <th>Age</th>
+            <th>Company Pension (Gross)</th>
+            <th>State Pension (Gross)</th>
+            <th>Total Core Pension (Net)</th>
+            <th>Monthly Pension</th>
+            <th>Drawings/month</th>
+            <th>Savings Pot End (£)</th>
+          </tr>
+        </thead>
+        <tbody id="breakdownBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="projection.js"></script>
 </body>
 </html>
