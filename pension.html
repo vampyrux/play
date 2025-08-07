@@ -301,7 +301,7 @@
   // Calculate company pension gross: Simple estimate
   // Assume company pension = 1/120th of final salary per year of service * years worked
   function calcCompanyPensionGross(finalSalary, yearsWorked) {
-    return (yearsWorked * 0.0083 * finalSalary) * (90 - 67) / (90 - retirementAge);
+    return (yearsWorked * 0.0083 * finalSalary) * (90 - 67) / (90 - Math.max(retirementAge, MIN_COMPANY_PENSION_AGE));
   }
 
   // Calculate state pension gross: flat rate depending on years worked
