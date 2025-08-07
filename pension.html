@@ -1,191 +1,551 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>UK Retirement Income Projection</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-  <style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pension Projection Tool</title>
+<style>
+  /* Reset & base */
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f3f8f5;
+    margin: 0;
+    padding: 20px;
+    color: #004d00;
+  }
+  h1 {
+    text-align: center;
+    color: #006400;
+    margin-bottom: 0.2em;
+  }
+  h2 {
+    color: #006400;
+    margin-top: 1.5em;
+  }
+  label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.25em;
+  }
+  input[type=number] {
+    width: 100%;
+    padding: 8px 10px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    border: 1.8px solid #a0d2a6;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #004d00;
+    background: #e8f3e9;
+    transition: border-color 0.3s ease;
+  }
+  input[type=number]:focus {
+    outline: none;
+    border-color: #228B22;
+    background: #d5eed3;
+  }
+
+  .input-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(240px,1fr));
+    gap: 15px 40px;
+    max-width: 960px;
+    margin: 0 auto 40px auto;
+  }
+
+  /* Output grid */
+  #outputGrid {
+    display: grid;
+    max-width: 960px;
+    margin: 0 auto 40px auto;
+    grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
+    gap: 20px;
+  }
+  .output-box {
+    background: #e8f3e9;
+    border-radius: 10px;
+    padding: 15px 20px;
+    box-shadow: inset 0 0 10px #c7dec3;
+    color: #004d00;
+  }
+  .output-title {
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 0.4em;
+  }
+  .output-value {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #006400;
+  }
+
+  /* Table styles */
+  table {
+    max-width: 960px;
+    margin: 0 auto 60px auto;
+    border-collapse: collapse;
+    width: 100%;
+    background: #e8f3e9;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 0 8px rgba(34, 139, 34, 0.2);
+  }
+  thead {
+    background-color: #228B22;
+    color: white;
+    font-weight: 600;
+  }
+  thead th {
+    padding: 12px 10px;
+    font-size: 0.9rem;
+    border-bottom: 2px solid #145214;
+  }
+  tbody tr:nth-child(even) {
+    background-color: #d4e8d4;
+  }
+  tbody tr:hover {
+    background-color: #a8d6a8;
+  }
+  tbody td {
+    padding: 8px 10px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  tbody td:first-child {
+    text-align: center;
+    font-weight: 700;
+  }
+
+  /* Chart container */
+  #chartContainer {
+    max-width: 960px;
+    margin: 0 auto 40px auto;
+    padding: 15px 15px 0 15px;
+    background: #e8f3e9;
+    border-radius: 10px;
+    box-shadow: inset 0 0 12px #b5d5b5;
+  }
+
+  /* Retirement label */
+  #retireLabel {
+    max-width: 960px;
+    margin: 0 auto 20px auto;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #228B22;
+    text-align: center;
+  }
+
+  /* Responsive */
+  @media (max-width: 480px) {
     body {
-      font-family: 'Roboto', sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #f5fff5;
-      color: #003300;
-      background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
-      background-size: cover;
-    }
-    .container {
-      max-width: 1200px;
-      margin: auto;
-      padding: 2rem;
-    }
-    h1, h2 {
-      text-align: center;
-      color: #228B22;
-    }
-    .card {
-      background: #ffffff;
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin-bottom: 2rem;
-      box-shadow: 0 0 15px rgba(34, 139, 34, 0.3);
-    }
-    label {
-      display: block;
-      margin: 0.5rem 0 0.2rem;
-      font-weight: bold;
-    }
-    input {
-      width: 100%;
-      padding: 0.5rem;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      margin-bottom: 0.3rem;
-      font-size: 1rem;
-    }
-    .input-group {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.2rem;
-    }
-    .input-field {
-      margin-bottom: 1rem;
-    }
-    .recommendation {
-      font-size: 0.85rem;
-      color: #555;
-      font-style: italic;
-    }
-    .output-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 1rem;
+      padding: 10px;
     }
     .output-box {
-      background: #f0fff0;
-      border-radius: 8px;
-      padding: 1rem;
-      border-left: 6px solid #32CD32;
-    }
-    .output-title {
-      font-weight: bold;
       font-size: 0.9rem;
     }
-    .output-value {
-      font-size: 1.5rem;
-      font-weight: bold;
-      color: #006400;
-      margin-top: 0.3rem;
-    }
-    canvas {
-      background: #f0fff0;
-      border-radius: 12px;
-      padding: 1rem;
-    }
-    table {
-      width: 100%;
-      margin-top: 2rem;
-      border-collapse: collapse;
-      background: #ffffff;
-      color: #003300;
-    }
-    th, td {
-      padding: 0.5rem;
-      border: 1px solid #ccc;
-      text-align: center;
-    }
-    th {
-      background: #ccffcc;
-    }
-  </style>
+  }
+</style>
 </head>
 <body>
-  <div class="container">
-    <h1>UK Retirement Income Projection</h1>
-    <div class="card">
-      <h2> Inputs</h2>
-      <form id="inputs">
-        <div class="input-group">
-          <div class="input-field">
-            <label>Current Age</label>
-            <input type="number" id="currentAge" min="18" max="66" value="40">
-            <div class="recommendation">Recommended: 40</div>
-          </div>
-          <div class="input-field">
-            <label>Retirement Age</label>
-            <input type="number" id="retirementAge" min="57" max="90" value="67">
-            <div class="recommendation">Minimum: 57</div>
-          </div>
-          <div class="input-field">
-            <label>Current Savings (£)</label>
-            <input type="number" id="currentSavings" value="50000">
-            <div class="recommendation">Recommended: £50,000</div>
-          </div>
-          <div class="input-field">
-            <label>Monthly Contributions (£)</label>
-            <input type="number" id="monthlyContributions" value="500">
-            <div class="recommendation">Recommended: £500–£1,000</div>
-          </div>
-          <div class="input-field">
-            <label>Annual Investment Return (%)</label>
-            <input type="number" step="0.1" id="investmentReturn" value="5">
-            <div class="recommendation">Recommended: 5%–7%</div>
-          </div>
-          <div class="input-field">
-            <label>Annual Inflation Rate (%)</label>
-            <input type="number" step="0.1" id="inflationRate" value="2.5">
-            <div class="recommendation">Recommended: 2.5%</div>
-          </div>
-          <div class="input-field">
-            <label>Current Salary (£)</label>
-            <input type="number" id="currentSalary" value="45000">
-            <div class="recommendation">Recommended: Current gross annual salary</div>
-          </div>
-          <div class="input-field">
-            <label>Employment Year</label>
-            <input type="number" id="employmentYear" value="2010">
-            <div class="recommendation">When you started working</div>
-          </div>
-          <div class="input-field">
-            <label>Target Monthly Income (£)</label>
-            <input type="number" id="targetIncome" value="2000">
-            <div class="recommendation">Recommended: 60–70% of salary</div>
-          </div>
-        </div>
-      </form>
-    </div>
 
-    <div class="card">
-      <h2>📊 Outputs <span id="retireLabel">at Retirement</span></h2>
-      <div class="output-grid" id="outputGrid"></div>
-    </div>
+<h1>Pension Projection Tool</h1>
 
-    <div class="card">
-      <h2>📈 Savings Pot vs Age</h2>
-      <canvas id="savingsChart"></canvas>
+<section aria-label="Input parameters">
+  <form id="inputForm" class="input-grid" onsubmit="return false;">
+    <div>
+      <label for="currentAge">Current Age</label>
+      <input type="number" id="currentAge" min="18" max="75" value="40" required />
     </div>
+    <div>
+      <label for="retirementAge">Retirement Age</label>
+      <input type="number" id="retirementAge" min="57" max="75" value="67" required />
+    </div>
+    <div>
+      <label for="currentSavings">Current Savings (£)</label>
+      <input type="number" id="currentSavings" min="0" step="100" value="30000" required />
+    </div>
+    <div>
+      <label for="monthlyContributions">Monthly Contributions (£)</label>
+      <input type="number" id="monthlyContributions" min="0" step="10" value="500" required />
+    </div>
+    <div>
+      <label for="investmentReturn">Expected Annual Investment Return (%)</label>
+      <input type="number" id="investmentReturn" min="0" max="15" step="0.1" value="5" required />
+    </div>
+    <div>
+      <label for="inflationRate">Expected Annual Inflation Rate (%)</label>
+      <input type="number" id="inflationRate" min="0" max="10" step="0.1" value="2" required />
+    </div>
+    <div>
+      <label for="currentSalary">Current Annual Salary (£)</label>
+      <input type="number" id="currentSalary" min="0" step="1000" value="35000" required />
+    </div>
+    <div>
+      <label for="employmentYear">Employment Start Year</label>
+      <input type="number" id="employmentYear" min="1950" max="2025" step="1" value="2010" required />
+    </div>
+    <div>
+      <label for="targetIncome">Target Monthly Income in Retirement (£)</label>
+      <input type="number" id="targetIncome" min="0" step="100" value="2000" required />
+    </div>
+  </form>
+</section>
 
-    <div class="card">
-      <h2>📋 Annual Breakdown</h2>
-      <table id="breakdownTable">
-        <thead>
-          <tr>
-            <th>Age</th>
-            <th>Company Pension (Gross)</th>
-            <th>State Pension (Gross)</th>
-            <th>Total Core Pension (Net)</th>
-            <th>Monthly Pension</th>
-            <th>Drawings/month</th>
-            <th>Savings Pot End (£)</th>
-          </tr>
-        </thead>
-        <tbody id="breakdownBody"></tbody>
-      </table>
-    </div>
+<div id="retireLabel">at Retirement Age 67</div>
+
+<section aria-label="Summary output">
+  <div id="outputGrid"></div>
+</section>
+
+<section aria-label="Savings projection chart">
+  <div id="chartContainer">
+    <canvas id="savingsChart" width="960" height="400" role="img" aria-label="Line chart showing savings pot over age"></canvas>
   </div>
+</section>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="projection.js"></script>
+<section aria-label="Detailed yearly breakdown">
+  <h2>Yearly Projection Breakdown</h2>
+  <table role="grid" aria-describedby="retireLabel">
+    <thead>
+      <tr>
+        <th scope="col">Age</th>
+        <th scope="col">Company Pension (Gross)</th>
+        <th scope="col">State Pension (Gross)</th>
+        <th scope="col">Core Pension (Net)</th>
+        <th scope="col">Total Monthly Income</th>
+        <th scope="col">Drawings per Month</th>
+        <th scope="col">Savings Pot (£)</th>
+      </tr>
+    </thead>
+    <tbody id="breakdownBody"></tbody>
+  </table>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+(() => {
+  // Constants
+  const PERSONAL_ALLOWANCE = 12570;
+  const STATE_PENSION_START_AGE = 67;
+  const MAX_STATE_PENSION_YEARS = 35;
+  const MIN_COMPANY_PENSION_AGE = 57;
+  const MAX_AGE = 90;
+
+  // Elements
+  const inputs = {
+    currentAge: document.getElementById('currentAge'),
+    retirementAge: document.getElementById('retirementAge'),
+    currentSavings: document.getElementById('currentSavings'),
+    monthlyContributions: document.getElementById('monthlyContributions'),
+    investmentReturn: document.getElementById('investmentReturn'),
+    inflationRate: document.getElementById('inflationRate'),
+    currentSalary: document.getElementById('currentSalary'),
+    employmentYear: document.getElementById('employmentYear'),
+    targetIncome: document.getElementById('targetIncome'),
+  };
+
+  const outputGrid = document.getElementById('outputGrid');
+  const breakdownBody = document.getElementById('breakdownBody');
+  const retireLabel = document.getElementById('retireLabel');
+
+  // Chart.js instance
+  let savingsChart;
+
+  // Utility: Format number with commas & optional decimals
+  function fmt(num, decimals = 0) {
+    if (isNaN(num) || num === null) return '-';
+    return num.toLocaleString('en-GB', {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    });
+  }
+
+  // Clamp input values for validity
+  function validateInputs() {
+    let curAge = parseInt(inputs.currentAge.value, 10);
+    let retAge = parseInt(inputs.retirementAge.value, 10);
+
+    if (retAge < curAge) inputs.retirementAge.value = curAge;
+    if (retAge < MIN_COMPANY_PENSION_AGE) inputs.retirementAge.value = MIN_COMPANY_PENSION_AGE;
+
+    // Reparse after possible correction
+    return {
+      currentAge: parseInt(inputs.currentAge.value, 10),
+      retirementAge: parseInt(inputs.retirementAge.value, 10),
+      currentSavings: parseFloat(inputs.currentSavings.value),
+      monthlyContributions: parseFloat(inputs.monthlyContributions.value),
+      investmentReturn: parseFloat(inputs.investmentReturn.value) / 100,
+      inflationRate: parseFloat(inputs.inflationRate.value) / 100,
+      currentSalary: parseFloat(inputs.currentSalary.value),
+      employmentYear: parseInt(inputs.employmentYear.value, 10),
+      targetIncome: parseFloat(inputs.targetIncome.value),
+    };
+  }
+
+  // Calculate inflation adjusted salary at retirement
+  function calcInflationAdjustedSalary(salary, inflation, years) {
+    return salary * Math.pow(1 + inflation, years);
+  }
+
+  // Calculate years worked capped at MAX_STATE_PENSION_YEARS
+  function calcYearsWorked(currentYear, retirementAge, currentAge, employmentYear) {
+    const yearsFromNowToRetire = retirementAge - currentAge;
+    const totalYearsWorked = (currentYear + yearsFromNowToRetire) - employmentYear;
+    return Math.min(MAX_STATE_PENSION_YEARS, Math.max(0, totalYearsWorked));
+  }
+
+  // Calculate company pension gross: Simple estimate
+  // Assume company pension = 1/60th of final salary per year of service * years worked
+  function calcCompanyPensionGross(finalSalary, yearsWorked) {
+    return (yearsWorked / 60) * finalSalary;
+  }
+
+  // Calculate state pension gross: flat rate depending on years worked
+  // Max full state pension ~£203.85/week (2023) scaled by years worked / max years
+  function calcStatePensionGross(yearsWorked) {
+    const fullWeekly = 203.85;
+    const pensionWeekly = fullWeekly * (yearsWorked / MAX_STATE_PENSION_YEARS);
+    return pensionWeekly * 52; // annual
+  }
+
+  // Apply 20% tax on income above personal allowance
+  function netAfterTax(grossIncome) {
+    const taxable = Math.max(0, grossIncome - PERSONAL_ALLOWANCE);
+    const tax = taxable * 0.20;
+    return grossIncome - tax;
+  }
+
+  // Calculate savings pot and drawdown each year from current age to MAX_AGE
+  function calculateProjection() {
+    const {
+      currentAge,
+      retirementAge,
+      currentSavings,
+      monthlyContributions,
+      investmentReturn,
+      inflationRate,
+      currentSalary,
+      employmentYear,
+      targetIncome,
+    } = validateInputs();
+
+    const currentYear = new Date().getFullYear();
+    const yearsToRetire = retirementAge - currentAge;
+
+    // Adjust salary and target income for inflation until retirement
+    const finalSalary = calcInflationAdjustedSalary(currentSalary, inflationRate, yearsToRetire);
+    const targetMonthlyIncomeInflated = calcInflationAdjustedSalary(targetIncome * 12, inflationRate, yearsToRetire) / 12;
+
+    // Calculate years worked for pensions
+    const yearsWorked = calcYearsWorked(currentYear, retirementAge, currentAge, employmentYear);
+
+    // Calculate pensions at retirement age
+    const companyPensionGross = retirementAge >= MIN_COMPANY_PENSION_AGE
+      ? calcCompanyPensionGross(finalSalary, yearsWorked)
+      : 0;
+
+    const statePensionGross = calcStatePensionGross(yearsWorked);
+
+    // Prepare yearly projections from current age to MAX_AGE
+    // Savings pot grows monthly pre-retirement, stops contributions at retirement
+    // Drawdown starts at retirement to meet target income (targetMonthlyIncomeInflated)
+    // Core pension income (company + state) starts at retirement & 67 respectively
+    // Net pension after 20% tax on income above personal allowance
+
+    let savingsPot = currentSavings;
+    const monthlyReturn = Math.pow(1 + investmentReturn, 1/12) - 1;
+
+    // Arrays for chart and table
+    const ages = [];
+    const savingsHistory = [];
+    const tableData = [];
+
+    // Annual target income and pensions (annualised)
+    const targetAnnualIncome = targetMonthlyIncomeInflated * 12;
+
+    for (let age = currentAge; age <= MAX_AGE; age++) {
+      ages.push(age);
+
+      if (age < retirementAge) {
+        // Accumulate savings pot with monthly contributions and monthly returns
+        // Approximate yearly growth by compounding monthly
+        for (let m = 0; m < 12; m++) {
+          savingsPot = savingsPot * (1 + monthlyReturn) + monthlyContributions;
+        }
+      } else {
+        // Drawdown to cover shortfall between pensions and target income
+
+        // Company pension only available if age >= retirementAge
+        const compPension = age >= retirementAge ? companyPensionGross : 0;
+        // State pension only starts at STATE_PENSION_START_AGE
+        const statePension = age >= STATE_PENSION_START_AGE ? statePensionGross : 0;
+
+        // Total annual pension gross
+        const totalPensionGross = compPension + statePension;
+
+        // Net pension income after tax
+        const corePensionNet = netAfterTax(totalPensionGross);
+
+        // Monthly net pension
+        const corePensionMonthlyNet = corePensionNet / 12;
+
+        // Shortfall to target income
+        const shortfall = Math.max(0, targetMonthlyIncomeInflated - corePensionMonthlyNet);
+
+        // Annual shortfall drawdown from savings pot
+        const annualDrawdown = shortfall * 12;
+
+        // Deplete savings pot
+        savingsPot = Math.max(0, savingsPot * (1 + investmentReturn) - annualDrawdown);
+      }
+
+      savingsHistory.push(savingsPot);
+
+      // Fill yearly table data
+      const compPensionThisYear = age >= retirementAge ? companyPensionGross : 0;
+      const statePensionThisYear = age >= STATE_PENSION_START_AGE ? statePensionGross : 0;
+      const totalPensionGrossThisYear = compPensionThisYear + statePensionThisYear;
+      const corePensionNetThisYear = netAfterTax(totalPensionGrossThisYear);
+      const corePensionMonthlyNetThisYear = corePensionNetThisYear / 12;
+      const monthlyDrawings = Math.max(0, targetMonthlyIncomeInflated - corePensionMonthlyNetThisYear);
+
+      tableData.push({
+        age,
+        companyPensionGross: compPensionThisYear,
+        statePensionGross: statePensionThisYear,
+        corePensionNet: corePensionNetThisYear,
+        totalMonthlyIncome: corePensionMonthlyNetThisYear + monthlyDrawings,
+        monthlyDrawings,
+        savingsPot,
+      });
+    }
+
+    // Update retirement label
+    retireLabel.textContent = `Projection at Retirement Age ${retirementAge}`;
+
+    // Output summary boxes
+    const totalContributions = monthlyContributions * 12 * yearsToRetire;
+    const projectedPot = savingsHistory[yearsToRetire];
+    const totalPensionsGrossAtRetirement = companyPensionGross + statePensionGross;
+    const corePensionNetAtRetirement = netAfterTax(totalPensionsGrossAtRetirement);
+    const monthlyDrawdownAtRetirement = Math.max(0, targetMonthlyIncomeInflated - (corePensionNetAtRetirement / 12));
+
+    outputGrid.innerHTML = `
+      <div class="output-box">
+        <div class="output-title">Years Until Retirement</div>
+        <div class="output-value">${yearsToRetire}</div>
+      </div>
+      <div class="output-box">
+        <div class="output-title">Total Contributions (£)</div>
+        <div class="output-value">£${fmt(totalContributions)}</div>
+      </div>
+      <div class="output-box">
+        <div class="output-title">Projected Savings Pot at Retirement (£)</div>
+        <div class="output-value">£${fmt(projectedPot)}</div>
+      </div>
+      <div class="output-box">
+        <div class="output-title">Estimated Company Pension (Gross, Annual)</div>
+        <div class="output-value">£${fmt(companyPensionGross)}</div>
+      </div>
+      <div class="output-box">
+        <div class="output-title">Estimated State Pension (Gross, Annual)</div>
+        <div class="output-value">£${fmt(statePensionGross)}</div>
+      </div>
+      <div class="output-box">
+        <div class="output-title">Core Pension (Net, Annual)</div>
+        <div class="output-value">£${fmt(corePensionNetAtRetirement)}</div>
+      </div>
+      <div class="output-box">
+        <div class="output-title">Monthly Drawdown Required at Retirement</div>
+        <div class="output-value">£${fmt(monthlyDrawdownAtRetirement)}</div>
+      </div>
+    `;
+
+    // Update table rows
+    breakdownBody.innerHTML = tableData.map(({ age, companyPensionGross, statePensionGross, corePensionNet, totalMonthlyIncome, monthlyDrawings, savingsPot }) =>
+      `<tr>
+        <td>${age}</td>
+        <td>£${fmt(companyPensionGross)}</td>
+        <td>£${fmt(statePensionGross)}</td>
+        <td>£${fmt(corePensionNet)}</td>
+        <td>£${fmt(totalMonthlyIncome)}</td>
+        <td>£${fmt(monthlyDrawings)}</td>
+        <td>£${fmt(savingsPot)}</td>
+      </tr>`
+    ).join('');
+
+    // Chart update
+    if (savingsChart) savingsChart.destroy();
+
+    const ctx = document.getElementById('savingsChart').getContext('2d');
+    savingsChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ages,
+        datasets: [
+          {
+            label: 'Savings Pot (£)',
+            data: savingsHistory,
+            fill: true,
+            borderColor: 'rgba(34, 139, 34, 0.85)',
+            backgroundColor: 'rgba(144, 238, 144, 0.4)',
+            pointRadius: 0,
+            borderWidth: 2,
+            tension: 0.3,
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
+        plugins: {
+          legend: { labels: { color: '#004d00', font: { weight: 'bold' } } },
+          tooltip: {
+            enabled: true,
+            backgroundColor: '#228B22',
+            titleColor: '#e8f3e9',
+            bodyColor: '#e8f3e9',
+            callbacks: {
+              label: ctx => `£${fmt(ctx.parsed.y)}`
+            }
+          }
+        },
+        scales: {
+          x: {
+            title: { display: true, text: 'Age', color: '#004d00', font: { weight: 'bold' } },
+            ticks: { color: '#004d00' },
+            grid: { color: 'rgba(34, 139, 34, 0.1)' }
+          },
+          y: {
+            title: { display: true, text: 'Savings Pot (£)', color: '#004d00', font: { weight: 'bold' } },
+            ticks: { color: '#004d00' },
+            grid: { color: 'rgba(34, 139, 34, 0.1)' },
+            beginAtZero: true,
+          }
+        }
+      }
+    });
+  }
+
+  // Attach event listeners to inputs for live updates
+  Object.values(inputs).forEach(input => {
+    input.addEventListener('input', () => {
+      calculateProjection();
+    });
+  });
+
+  // Initial calculation
+  calculateProjection();
+
+})();
+</script>
+
 </body>
 </html>
